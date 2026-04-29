@@ -6,11 +6,13 @@
 
 - [ ] 根据实际项目需求，进一步完善仓库结构
 - [ ] 定期回顾并更新 MEMORY.md
+- [ ] 为技能系统添加更多实用技能（数据处理、AI 增强等）
 
 ## 已完成
 
 - [x] 2026-04-29 初始化 AI 工作空间（AGENTS.md、目录结构）
 - [x] 2026-04-29 为 ai-ui-chatRoom 创建导航官网（docs/index.html，UI-UX-PRO-MAX 级别）
+- [x] 2026-04-29 建立技能系统（.agents/skills/，含规范、索引、示例技能、CI 校验 workflow）
 
 ---
 
