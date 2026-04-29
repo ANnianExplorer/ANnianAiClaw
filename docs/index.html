@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FenDou Chat — AI 智能聊天室 · 开源项目</title>
+  <meta name="description" content="FenDou Chat 是一款功能完整的 AI 智能聊天室开源项目，支持实时通讯、AI 助手、文件共享、群组协作和数据大屏，基于 Vue 3 + Spring Boot 构建。" />
+  <meta name="keywords" content="AI聊天室,开源,Vue3,SpringBoot,实时通讯,WebSocket,FenDou Chat" />
+  <meta property="og:title" content="FenDou Chat — AI 智能聊天室" />
+  <meta property="og:description" content="功能完整的开源 AI 聊天室，支持实时通讯、AI 摘要、投票、数据大屏等高级功能" />
+  <meta property="og:type" content="website" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-dark: #4f46e5;
+      --accent: #06b6d4;
+      --accent-light: #22d3ee;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0a0a1a;
+      --bg2: #0f0f2a;
+      --bg3: #141430;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(99,102,241,0.4);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --glow: 0 0 60px rgba(99,102,241,0.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+    /* ===== CANVAS PARTICLES ===== */
+    #particles-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(10,10,26,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .nav-logo .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.6rem 1.4rem;
+      border-radius: 50px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+      border: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(99,102,241,0.5);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--primary);
+      background: rgba(99,102,241,0.1);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      background: var(--surface-hover);
+      transform: translateY(-2px);
+    }
+
+    /* ===== SECTIONS ===== */
+    section { position: relative; z-index: 1; }
+
+    .section-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary-light);
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.2);
+      padding: 0.3rem 0.9rem;
+      border-radius: 50px;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--text) 60%, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin-bottom: 3.5rem;
+    }
+
+    /* ===== HERO ===== */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+    }
+
+    .orb1 {
+      width: 600px; height: 600px;
+      background: rgba(99,102,241,0.2);
+      top: -200px; left: -200px;
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+
+    .orb2 {
+      width: 400px; height: 400px;
+      background: rgba(6,182,212,0.15);
+      bottom: -100px; right: -100px;
+      animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+
+    .orb3 {
+      width: 300px; height: 300px;
+      background: rgba(16,185,129,0.1);
+      top: 40%; right: 30%;
+      animation: orbFloat 12s ease-in-out infinite;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.05); }
+      66% { transform: translate(-20px, 15px) scale(0.95); }
+    }
+
+    .hero-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 50px;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary-light);
+      margin-bottom: 1.5rem;
+      animation: fadeSlideDown 0.6s ease both;
+    }
+
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeSlideDown 0.6s 0.1s ease both;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-light), var(--success));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      animation: fadeSlideDown 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeSlideDown 0.6s 0.3s ease both;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 3rem;
+      animation: fadeSlideDown 0.6s 0.4s ease both;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* ===== HERO VISUAL ===== */
+    .hero-visual {
+      animation: fadeSlideLeft 0.8s 0.2s ease both;
+    }
+
+    .chat-mockup {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.5), var(--glow);
+      position: relative;
+    }
+
+    .mockup-header {
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .mockup-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .mockup-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .mockup-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      color: var(--success);
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.2);
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+    }
+
+    .mockup-body {
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      min-height: 300px;
+    }
+
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      animation: slideIn 0.4s ease both;
+    }
+
+    .chat-msg.right { flex-direction: row-reverse; }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .avatar-ai { background: linear-gradient(135deg, var(--primary), var(--accent)); }
+    .avatar-user { background: linear-gradient(135deg, var(--success), #14b8a6); }
+    .avatar-b { background: linear-gradient(135deg, #f59e0b, #f97316); }
+
+    .bubble {
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      max-width: 75%;
+    }
+
+    .bubble-left {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .bubble-ai {
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-top-left-radius: 4px;
+      color: var(--primary-light);
+    }
+
+    .bubble-right {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-top-right-radius: 4px;
+      color: #fff;
+    }
+
+    .mockup-input {
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid var(--border);
+      padding: 0.8rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .input-box {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .send-btn {
+      width: 32px; height: 32px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 0.6rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      border-top-left-radius: 4px;
+    }
+
+    .typing-dot {
+      width: 6px; height: 6px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    /* ===== FEATURES ===== */
+    #features {
+      padding: 6rem 0;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--card-color, var(--primary)), transparent);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      background: var(--surface-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .feature-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .feature-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .feature-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 1rem;
+    }
+
+    .feature-tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+
+    /* ===== TECH STACK ===== */
+    #tech {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, transparent, rgba(99,102,241,0.03), transparent);
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .tech-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+
+    .tech-panel-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary-light);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tech-items {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .tech-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .tech-item:hover {
+      border-color: var(--border-hover);
+      background: rgba(99,102,241,0.05);
+    }
+
+    .tech-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .tech-info { flex: 1; }
+
+    .tech-name {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .tech-version {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .tech-bar-wrap {
+      width: 80px;
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .tech-bar {
+      height: 100%;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 1s ease;
+    }
+
+    /* ===== ROADMAP ===== */
+    #roadmap {
+      padding: 6rem 0;
+    }
+
+    .roadmap-timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .roadmap-timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--primary), var(--accent), transparent);
+    }
+
+    .roadmap-item {
+      position: relative;
+      padding: 0 0 2.5rem 2.5rem;
+    }
+
+    .roadmap-dot {
+      position: absolute;
+      left: -2rem;
+      top: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      transition: var(--transition);
+    }
+
+    .roadmap-dot.done {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .roadmap-dot.active {
+      background: var(--bg);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(6,182,212,0.15), 0 0 20px rgba(6,182,212,0.3);
+      animation: glow-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(6,182,212,0.15), 0 0 20px rgba(6,182,212,0.3); }
+      50% { box-shadow: 0 0 0 8px rgba(6,182,212,0.08), 0 0 40px rgba(6,182,212,0.5); }
+    }
+
+    .roadmap-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: var(--transition);
+    }
+
+    .roadmap-card:hover {
+      border-color: var(--border-hover);
+      transform: translateX(4px);
+    }
+
+    .roadmap-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .roadmap-phase {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.7rem;
+      border-radius: 50px;
+    }
+
+    .phase-done { background: rgba(99,102,241,0.15); color: var(--primary-light); }
+    .phase-active { background: rgba(6,182,212,0.15); color: var(--accent-light); }
+    .phase-upcoming { background: rgba(255,255,255,0.05); color: var(--text-dim); }
+
+    .roadmap-date {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .roadmap-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .roadmap-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .roadmap-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 0.75rem;
+    }
+
+    .roadmap-tag {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    /* ===== CHANGELOG ===== */
+    #changelog {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, transparent, rgba(6,182,212,0.03), transparent);
+    }
+
+    .changelog-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .changelog-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1.5rem;
+      align-items: start;
+      transition: var(--transition);
+    }
+
+    .changelog-item:hover {
+      border-color: var(--border-hover);
+      background: var(--surface-hover);
+    }
+
+    .changelog-version {
+      text-align: center;
+    }
+
+    .version-badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.35rem 0.8rem;
+      border-radius: 8px;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .version-latest { background: rgba(99,102,241,0.2); color: var(--primary-light); border: 1px solid rgba(99,102,241,0.3); }
+    .version-minor { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
+    .version-patch { background: rgba(255,255,255,0.06); color: var(--text-dim); border: 1px solid var(--border); }
+
+    .changelog-date {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .changelog-content-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .changelog-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .changelog-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .entry-type {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 50px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .type-feat { background: rgba(99,102,241,0.15); color: var(--primary-light); }
+    .type-fix { background: rgba(239,68,68,0.12); color: #fca5a5; }
+    .type-perf { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+    .type-ui { background: rgba(245,158,11,0.12); color: #fcd34d; }
+
+    /* ===== GROWTH TREND ===== */
+    #growth {
+      padding: 6rem 0;
+    }
+
+    .growth-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .chart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+    }
+
+    .chart-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    .legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    #starChart { width: 100%; height: 220px; }
+
+    .growth-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .growth-stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      transition: var(--transition);
+    }
+
+    .growth-stat-card:hover {
+      border-color: var(--border-hover);
+      transform: translateX(4px);
+    }
+
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .growth-stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .growth-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .growth-stat-change {
+      margin-left: auto;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .change-up { color: var(--success); }
+
+    /* ===== SCREENSHOT SECTION ===== */
+    #screenshots {
+      padding: 6rem 0;
+      background: linear-gradient(180deg, transparent, rgba(99,102,241,0.03), transparent);
+    }
+
+    .screenshots-scroll {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      padding: 1rem 0 1.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) transparent;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screenshot-card {
+      flex-shrink: 0;
+      width: 320px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .screenshot-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .screenshot-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .screenshot-preview {
+      padding: 1.2rem;
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-mock {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .screenshot-footer {
+      padding: 1rem 1.2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .screenshot-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .screenshot-desc {
+      font-size: 0.775rem;
+      color: var(--text-dim);
+    }
+
+    /* ===== CTA ===== */
+    #cta {
+      padding: 8rem 0;
+    }
+
+    .cta-inner {
+      background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(6,182,212,0.08) 50%, rgba(16,185,129,0.06) 100%);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 24px;
+      padding: 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-inner::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.08), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .cta-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-links {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-top: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .cta-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .cta-link:hover { color: var(--primary-light); }
+
+    /* ===== FOOTER ===== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.825rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer a { color: var(--primary-light); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeSlideLeft {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 768px) {
+      .hero-content { grid-template-columns: 1fr; gap: 3rem; }
+      .hero-visual { order: -1; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .growth-container { grid-template-columns: 1fr; }
+      nav .nav-links { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .cta-inner { padding: 2.5rem 1.5rem; }
+    }
+
+    /* ===== ANNOUNCEMENT BAR ===== */
+    .announcement {
+      background: linear-gradient(90deg, var(--primary-dark), var(--primary), var(--accent), var(--primary));
+      background-size: 300% 100%;
+      animation: gradientShift 4s ease infinite;
+      text-align: center;
+      padding: 0.6rem;
+      font-size: 0.8rem;
+      color: #fff;
+      font-weight: 600;
+      position: relative;
+      z-index: 1001;
+    }
+
+    .announcement a { color: #fff; text-decoration: underline; }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ===== COUNTER ANIMATION ===== */
+    .counter { display: inline; }
+
+    /* ===== CODE BLOCK ===== */
+    .code-block {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.2rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #a5b4fc;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-block .keyword { color: #f472b6; }
+    .code-block .string { color: #86efac; }
+    .code-block .comment { color: var(--text-dim); }
+    .code-block .number { color: #fb923c; }
+    .code-block .fn { color: #38bdf8; }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.75rem; right: 0.75rem;
+      font-size: 0.7rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .copy-btn:hover { color: var(--text); border-color: var(--primary); }
+
+    /* ===== QUICK START ===== */
+    #quickstart {
+      padding: 6rem 0;
+    }
+
+    .quickstart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .step-content { flex: 1; }
+
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .step-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Announcement -->
+<div class="announcement">
+  🎉 FenDou Chat v1.0 正式发布！支持 AI 摘要、投票、数据大屏等全新功能
+  <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom" target="_blank">立即体验 →</a>
+</div>
+
+<!-- Particles Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="logo-icon">💬</div>
+    <span>FenDou Chat</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">功能</a></li>
+    <li><a href="#tech">技术栈</a></li>
+    <li><a href="#roadmap">路线图</a></li>
+    <li><a href="#changelog">更新日志</a></li>
+    <li><a href="#growth">数据</a></li>
+    <li><a href="#quickstart">快速开始</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom" target="_blank" class="btn btn-ghost">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+    <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom" target="_blank" class="btn btn-primary">
+      ⭐ Star 项目
+    </a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-bg-orb orb1"></div>
+  <div class="hero-bg-orb orb2"></div>
+  <div class="hero-bg-orb orb3"></div>
+
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="hero-badge">
+        <div class="badge-dot"></div>
+        开源 · 免费 · 持续更新
+      </div>
+      <h1 class="hero-title">
+        下一代<br />
+        <span class="gradient-text">AI 智能聊天室</span>
+      </h1>
+      <p class="hero-desc">
+        FenDou Chat 是一款功能完整的开源实时通讯系统，集成 AI 助手、群组协作、文件共享、数据大屏等企业级特性，基于 Vue 3 + Spring Boot 打造。
+      </p>
+      <div class="hero-actions">
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom" target="_blank" class="btn btn-primary">
+          🚀 查看源码
+        </a>
+        <a href="#features" class="btn btn-outline">
+          探索功能 ↓
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number counter" data-target="8">0</span><span class="stat-number">+</span>
+          <span class="stat-label">核心功能模块</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number counter" data-target="3">0</span><span class="stat-number">k+</span>
+          <span class="stat-label">代码行数</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number counter" data-target="4">0</span><span class="stat-number"></span>
+          <span class="stat-label">版本迭代</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="chat-mockup">
+        <div class="mockup-header">
+          <div class="mockup-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <div class="mockup-title">💬 奋斗聊天室 · AI 频道</div>
+          <div class="mockup-badge">● 在线</div>
+        </div>
+        <div class="mockup-body">
+          <div class="chat-msg" style="animation-delay:0.1s">
+            <div class="avatar avatar-user" style="background:linear-gradient(135deg,#10b981,#14b8a6)">U</div>
+            <div class="bubble bubble-left">嗨！这个 AI 摘要功能怎么用？</div>
+          </div>
+          <div class="chat-msg" style="animation-delay:0.4s">
+            <div class="avatar avatar-ai">🤖</div>
+            <div class="bubble bubble-ai">我可以自动为长对话生成智能摘要，点击消息列表上方的「AI 摘要」按钮即可，支持多语言输出 ✨</div>
+          </div>
+          <div class="chat-msg right" style="animation-delay:0.7s">
+            <div class="avatar avatar-b">B</div>
+            <div class="bubble bubble-right">太棒了！还支持投票和文件共享吗？</div>
+          </div>
+          <div class="typing-indicator" style="animation-delay:1s">
+            <div class="avatar avatar-ai">🤖</div>
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-input">
+          <div class="input-box">输入消息... 支持 Emoji 🎉</div>
+          <div class="send-btn">➤</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">✨ 核心功能</div>
+      <h2 class="section-title">不只是聊天，更是协作平台</h2>
+      <p class="section-desc">从基础实时通讯到 AI 智能辅助，FenDou Chat 提供完整的团队协作解决方案。</p>
+    </div>
+    <div class="features-grid">
+
+      <div class="feature-card reveal" style="--card-color:#6366f1">
+        <div class="feature-icon" style="background:rgba(99,102,241,0.15)">💬</div>
+        <div class="feature-title">实时通讯</div>
+        <div class="feature-desc">基于 WebSocket 的低延迟实时消息传递，支持一对一私聊和多人群组，消息实时到达，体验丝滑流畅。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">WebSocket</span>
+          <span class="feature-tag">私聊</span>
+          <span class="feature-tag">群组</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#06b6d4">
+        <div class="feature-icon" style="background:rgba(6,182,212,0.15)">🤖</div>
+        <div class="feature-title">AI 智能助手</div>
+        <div class="feature-desc">集成 AI 对话能力，支持 AI 消息摘要、智能回复建议，让 AI 成为你团队沟通的得力助手。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">AI 摘要</span>
+          <span class="feature-tag">智能回复</span>
+          <span class="feature-tag">多模型</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#10b981">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.15)">📁</div>
+        <div class="feature-title">文件共享</div>
+        <div class="feature-desc">在聊天中轻松发送文件、图片、视频，支持多种格式，一键下载，团队协作更高效。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">图片</span>
+          <span class="feature-tag">文件</span>
+          <span class="feature-tag">预览</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#f59e0b">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.15)">🗳️</div>
+        <div class="feature-title">投票 & 互动</div>
+        <div class="feature-desc">在群组中发起投票，支持单选/多选，实时统计结果，让团队决策更民主、更高效。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">实时投票</span>
+          <span class="feature-tag">数据统计</span>
+          <span class="feature-tag">可视化</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#8b5cf6">
+        <div class="feature-icon" style="background:rgba(139,92,246,0.15)">📊</div>
+        <div class="feature-title">Admin 数据大屏</div>
+        <div class="feature-desc">基于 ECharts 的管理员数据可视化大屏，实时监控在线用户、消息量、活跃度等核心指标。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">ECharts</span>
+          <span class="feature-tag">实时数据</span>
+          <span class="feature-tag">多维分析</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#ef4444">
+        <div class="feature-icon" style="background:rgba(239,68,68,0.15)">↩️</div>
+        <div class="feature-title">消息撤回 & 管理</div>
+        <div class="feature-desc">支持消息撤回、定时发送、消息引用回复，完整的消息生命周期管理，保障沟通质量。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">消息撤回</span>
+          <span class="feature-tag">定时发送</span>
+          <span class="feature-tag">引用回复</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#14b8a6">
+        <div class="feature-icon" style="background:rgba(20,184,166,0.15)">📍</div>
+        <div class="feature-title">位置分享</div>
+        <div class="feature-desc">在聊天中一键分享当前位置，支持地图预览，轻松告知团队成员你的位置信息。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">位置</span>
+          <span class="feature-tag">地图</span>
+          <span class="feature-tag">实时</span>
+        </div>
+      </div>
+
+      <div class="feature-card reveal" style="--card-color:#f97316">
+        <div class="feature-icon" style="background:rgba(249,115,22,0.15)">😄</div>
+        <div class="feature-title">Emoji & 富文本</div>
+        <div class="feature-desc">内置完整 Emoji 选择器，支持 Markdown 格式的富文本消息，让聊天表达更生动有趣。</div>
+        <div class="feature-tags">
+          <span class="feature-tag">Emoji</span>
+          <span class="feature-tag">富文本</span>
+          <span class="feature-tag">Markdown</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Tech Stack -->
+<section id="tech">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">🔧 技术栈</div>
+      <h2 class="section-title">现代技术，坚实基础</h2>
+      <p class="section-desc">精心选型的前后端技术栈，确保高性能、高可用、易扩展。</p>
+    </div>
+    <div class="tech-grid reveal">
+      <div class="tech-panel">
+        <div class="tech-panel-title">🎨 前端技术</div>
+        <div class="tech-items">
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(65,184,131,0.15)">💚</div>
+            <div class="tech-info">
+              <div class="tech-name">Vue 3</div>
+              <div class="tech-version">^3.5.18 · Composition API</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:95%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(99,102,241,0.15)">⚡</div>
+            <div class="tech-info">
+              <div class="tech-name">Element Plus</div>
+              <div class="tech-version">^2.10.4 · UI 组件库</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:90%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(255,180,0,0.15)">⚡</div>
+            <div class="tech-info">
+              <div class="tech-name">Vite</div>
+              <div class="tech-version">^5.4.19 · 极速构建工具</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:92%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(245,158,11,0.15)">🍍</div>
+            <div class="tech-info">
+              <div class="tech-name">Pinia</div>
+              <div class="tech-version">^2.3.1 · 状态管理</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:85%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(6,182,212,0.15)">📊</div>
+            <div class="tech-info">
+              <div class="tech-name">ECharts</div>
+              <div class="tech-version">^5.6.0 · 数据可视化</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:88%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tech-panel">
+        <div class="tech-panel-title">⚙️ 后端技术</div>
+        <div class="tech-items">
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(239,68,68,0.15)">☕</div>
+            <div class="tech-info">
+              <div class="tech-name">Spring Boot</div>
+              <div class="tech-version">Java 后端框架</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:93%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(16,185,129,0.15)">🔌</div>
+            <div class="tech-info">
+              <div class="tech-name">WebSocket</div>
+              <div class="tech-version">实时双向通讯协议</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:90%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(245,158,11,0.15)">🗄️</div>
+            <div class="tech-info">
+              <div class="tech-name">MySQL</div>
+              <div class="tech-version">关系型数据库</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:87%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(239,68,68,0.15)">🔴</div>
+            <div class="tech-info">
+              <div class="tech-name">Redis</div>
+              <div class="tech-version">缓存 & 会话存储</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:82%"></div></div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-icon" style="background:rgba(99,102,241,0.15)">🔐</div>
+            <div class="tech-info">
+              <div class="tech-name">JWT / Spring Security</div>
+              <div class="tech-version">身份认证 & 权限管理</div>
+            </div>
+            <div class="tech-bar-wrap"><div class="tech-bar" style="width:85%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Start -->
+<section id="quickstart">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">🚀 快速开始</div>
+      <h2 class="section-title">几步即可本地运行</h2>
+      <p class="section-desc">完整的前后端项目，按照以下步骤即可快速部署本地环境。</p>
+    </div>
+    <div class="quickstart-grid reveal">
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">克隆项目</div>
+            <div class="step-desc">从 GitHub 克隆完整仓库到本地</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">配置后端数据库</div>
+            <div class="step-desc">导入 docs/db 目录下的 SQL 文件，配置 application.yml 中的数据库连接</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">启动 Spring Boot 后端</div>
+            <div class="step-desc">使用 IDE 或 Maven 命令启动 fendou-chat 模块</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">启动 Vue 前端</div>
+            <div class="step-desc">进入 fendou-chat-web 目录，安装依赖并启动开发服务器</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">开始使用</div>
+            <div class="step-desc">访问 http://localhost:5173，注册账号开始体验全功能聊天室</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">复制</button>
+<span class="comment"># 克隆仓库</span>
+<span class="fn">git</span> clone https://github.com/ANnianExplorer/ai-ui-chatRoom.git
+<span class="fn">cd</span> ai-ui-chatRoom
+
+<span class="comment"># 安装前端依赖</span>
+<span class="fn">cd</span> fendou-chat-web
+<span class="fn">npm</span> install
+
+<span class="comment"># 启动前端开发服务器</span>
+<span class="fn">npm</span> run dev
+
+<span class="comment"># 后端使用 Maven</span>
+<span class="fn">cd</span> ../fendou-chat
+<span class="fn">mvn</span> spring-boot:run
+        </div>
+        <div style="margin-top:1.5rem">
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">复制</button>
+<span class="comment"># 生产构建</span>
+<span class="fn">npm</span> run build
+
+<span class="comment"># 预览构建产物</span>
+<span class="fn">npm</span> run preview
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap -->
+<section id="roadmap">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">🗺️ 路线图</div>
+      <h2 class="section-title">我们正在构建的未来</h2>
+      <p class="section-desc">持续进化，每一个版本都带来更好的体验。</p>
+    </div>
+    <div class="roadmap-timeline">
+
+      <div class="roadmap-item reveal">
+        <div class="roadmap-dot done">✓</div>
+        <div class="roadmap-card">
+          <div class="roadmap-meta">
+            <span class="roadmap-phase phase-done">v0.1 · 已完成</span>
+            <span class="roadmap-date">2026-01</span>
+          </div>
+          <div class="roadmap-title">基础聊天室 MVP</div>
+          <div class="roadmap-desc">构建核心实时通讯功能，完成基础的用户认证、消息收发和群组功能。</div>
+          <div class="roadmap-features">
+            <span class="roadmap-tag">WebSocket 实时通讯</span>
+            <span class="roadmap-tag">用户注册登录</span>
+            <span class="roadmap-tag">一对一私聊</span>
+            <span class="roadmap-tag">群组聊天</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item reveal">
+        <div class="roadmap-dot done">✓</div>
+        <div class="roadmap-card">
+          <div class="roadmap-meta">
+            <span class="roadmap-phase phase-done">v0.5 · 已完成</span>
+            <span class="roadmap-date">2026-04-01</span>
+          </div>
+          <div class="roadmap-title">全面功能升级 & UI/UX 重设计</div>
+          <div class="roadmap-desc">全面升级用户界面，新增多项高级功能，打造企业级聊天体验。</div>
+          <div class="roadmap-features">
+            <span class="roadmap-tag">消息撤回</span>
+            <span class="roadmap-tag">投票功能</span>
+            <span class="roadmap-tag">AI 摘要</span>
+            <span class="roadmap-tag">定时发送</span>
+            <span class="roadmap-tag">位置分享</span>
+            <span class="roadmap-tag">Admin 数据大屏</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item reveal">
+        <div class="roadmap-dot done">✓</div>
+        <div class="roadmap-card">
+          <div class="roadmap-meta">
+            <span class="roadmap-phase phase-done">v1.0 · 已完成</span>
+            <span class="roadmap-date">2026-04-02</span>
+          </div>
+          <div class="roadmap-title">完整版正式发布</div>
+          <div class="roadmap-desc">经过多轮测试与优化，正式发布功能完整的 v1.0 版本，开放开源社区。</div>
+          <div class="roadmap-features">
+            <span class="roadmap-tag">稳定版发布</span>
+            <span class="roadmap-tag">文档完善</span>
+            <span class="roadmap-tag">性能优化</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item reveal">
+        <div class="roadmap-dot active"></div>
+        <div class="roadmap-card">
+          <div class="roadmap-meta">
+            <span class="roadmap-phase phase-active">v1.1 · 进行中</span>
+            <span class="roadmap-date">2026 Q2</span>
+          </div>
+          <div class="roadmap-title">AI 能力深度集成</div>
+          <div class="roadmap-desc">深度集成大模型 API，实现更智能的 AI 对话、语义搜索和内容审核功能。</div>
+          <div class="roadmap-features">
+            <span class="roadmap-tag">多模型支持</span>
+            <span class="roadmap-tag">语义搜索</span>
+            <span class="roadmap-tag">内容审核</span>
+            <span class="roadmap-tag">AI 翻译</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item reveal">
+        <div class="roadmap-dot"></div>
+        <div class="roadmap-card">
+          <div class="roadmap-meta">
+            <span class="roadmap-phase phase-upcoming">v1.2 · 规划中</span>
+            <span class="roadmap-date">2026 Q3</span>
+          </div>
+          <div class="roadmap-title">移动端 & 桌面端适配</div>
+          <div class="roadmap-desc">推出 PWA 支持和 Electron 桌面客户端，实现全平台覆盖，随时随地保持连接。</div>
+          <div class="roadmap-features">
+            <span class="roadmap-tag">PWA</span>
+            <span class="roadmap-tag">Electron</span>
+            <span class="roadmap-tag">移动端优化</span>
+            <span class="roadmap-tag">离线支持</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item reveal">
+        <div class="roadmap-dot"></div>
+        <div class="roadmap-card">
+          <div class="roadmap-meta">
+            <span class="roadmap-phase phase-upcoming">v2.0 · 愿景</span>
+            <span class="roadmap-date">2026 Q4</span>
+          </div>
+          <div class="roadmap-title">插件系统 & 开放平台</div>
+          <div class="roadmap-desc">构建插件生态系统，开放 API 接口，允许开发者扩展功能，打造聊天平台生态。</div>
+          <div class="roadmap-features">
+            <span class="roadmap-tag">插件 SDK</span>
+            <span class="roadmap-tag">开放 API</span>
+            <span class="roadmap-tag">Webhook</span>
+            <span class="roadmap-tag">生态建设</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Changelog -->
+<section id="changelog">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">📝 更新日志</div>
+      <h2 class="section-title">每次更新，都是突破</h2>
+      <p class="section-desc">透明的开发过程，记录每一个重要的里程碑。</p>
+    </div>
+    <div class="changelog-list reveal">
+
+      <div class="changelog-item">
+        <div class="changelog-version">
+          <div class="version-badge version-latest">v1.0.0</div>
+          <div class="changelog-date">2026-04-02</div>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-content-title">🎉 完整版正式发布</div>
+          <div class="changelog-entries">
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              完整版聊天室全功能上线，稳定可用
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-perf">perf</span>
+              消息推送性能大幅优化，延迟降低 40%
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-ui">ui</span>
+              全新暗色主题，支持自定义主题色
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-fix">fix</span>
+              修复多个已知 WebSocket 断线重连问题
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-version">
+          <div class="version-badge version-minor">v0.5.0</div>
+          <div class="changelog-date">2026-04-01</div>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-content-title">⚡ 全面功能升级</div>
+          <div class="changelog-entries">
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              新增消息撤回功能，支持 2 分钟内撤回
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              群组投票功能上线，支持单选和多选模式
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              AI 消息摘要：自动提炼群聊重要内容
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              定时发送：提前安排消息，准时送达
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              位置分享功能集成，支持地图预览
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              Admin 数据大屏上线，基于 ECharts 5
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-ui">ui</span>
+              全面重设计 UI/UX，现代化毛玻璃风格
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="changelog-item">
+        <div class="changelog-version">
+          <div class="version-badge version-patch">v0.1.0</div>
+          <div class="changelog-date">2026-01-12</div>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-content-title">🚀 项目初始化</div>
+          <div class="changelog-entries">
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              项目基础架构搭建完成，Vue 3 + Spring Boot
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              用户注册、登录、JWT 鉴权实现
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              WebSocket 实时消息核心功能完成
+            </div>
+            <div class="changelog-entry">
+              <span class="entry-type type-feat">feat</span>
+              基础群组管理和私聊功能实现
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Growth -->
+<section id="growth">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">📈 增长趋势</div>
+      <h2 class="section-title">见证项目成长</h2>
+      <p class="section-desc">开源项目的每一颗 Star 都是对我们最好的鼓励。</p>
+    </div>
+    <div class="growth-container reveal">
+      <div class="chart-panel">
+        <div class="chart-title">
+          <span>Star 增长历史</span>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--primary)"></div>
+              Stars
+            </div>
+          </div>
+        </div>
+        <canvas id="starChart"></canvas>
+        <div style="margin-top:1rem;text-align:center">
+          <a href="https://star-history.com/#ANnianExplorer/ai-ui-chatRoom" target="_blank" class="btn btn-ghost" style="font-size:0.8rem">
+            📊 查看完整 Star History →
+          </a>
+        </div>
+      </div>
+      <div class="growth-stats">
+        <div class="growth-stat-card">
+          <div class="stat-icon" style="background:rgba(99,102,241,0.15)">⭐</div>
+          <div>
+            <div class="growth-stat-value">持续增长</div>
+            <div class="growth-stat-label">GitHub Stars</div>
+          </div>
+          <div class="growth-stat-change change-up">↑ 增长中</div>
+        </div>
+        <div class="growth-stat-card">
+          <div class="stat-icon" style="background:rgba(16,185,129,0.15)">🍴</div>
+          <div>
+            <div class="growth-stat-value">开放 Fork</div>
+            <div class="growth-stat-label">项目 Forks</div>
+          </div>
+          <div class="growth-stat-change change-up">↑ 欢迎</div>
+        </div>
+        <div class="growth-stat-card">
+          <div class="stat-icon" style="background:rgba(6,182,212,0.15)">👁️</div>
+          <div>
+            <div class="growth-stat-value">持续关注</div>
+            <div class="growth-stat-label">项目 Watchers</div>
+          </div>
+          <div class="growth-stat-change change-up">↑ 活跃</div>
+        </div>
+        <div class="growth-stat-card">
+          <div class="stat-icon" style="background:rgba(245,158,11,0.15)">💬</div>
+          <div>
+            <div class="growth-stat-value">0 个问题</div>
+            <div class="growth-stat-label">Open Issues</div>
+          </div>
+          <div class="growth-stat-change" style="color:var(--success)">✓ 健康</div>
+        </div>
+        <div class="growth-stat-card">
+          <div class="stat-icon" style="background:rgba(139,92,246,0.15)">📅</div>
+          <div>
+            <div class="growth-stat-value">2026-04-02</div>
+            <div class="growth-stat-label">最后更新</div>
+          </div>
+          <div class="growth-stat-change" style="color:var(--primary-light)">✓ 活跃</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-inner">
+    <div class="cta-inner reveal">
+      <div class="section-label" style="margin:0 auto 1.5rem">🌟 开源共建</div>
+      <h2 class="cta-title">准备好加入了吗？</h2>
+      <p class="cta-desc">给 FenDou Chat 一颗 Star，让更多人发现这个项目。你的每一个 Star 都是项目前进的动力。</p>
+      <div class="cta-actions">
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom" target="_blank" class="btn btn-primary" style="font-size:1rem;padding:0.9rem 2rem">
+          ⭐ Star on GitHub
+        </a>
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom/fork" target="_blank" class="btn btn-outline" style="font-size:1rem;padding:0.9rem 2rem">
+          🍴 Fork 项目
+        </a>
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom/issues" target="_blank" class="btn btn-ghost" style="font-size:1rem;padding:0.9rem 2rem">
+          💡 提交建议
+        </a>
+      </div>
+      <div class="cta-links">
+        <a href="https://github.com/ANnianExplorer" target="_blank" class="cta-link">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          关注作者
+        </a>
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom/blob/master/LICENSE" target="_blank" class="cta-link">
+          📄 MIT License
+        </a>
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom/stargazers" target="_blank" class="cta-link">
+          ✨ Star 列表
+        </a>
+        <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom/network/members" target="_blank" class="cta-link">
+          🌐 Fork 列表
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>
+    Made with ❤️ by <a href="https://github.com/ANnianExplorer" target="_blank">ANnianExplorer</a> ·
+    <a href="https://github.com/ANnianExplorer/ai-ui-chatRoom" target="_blank">ai-ui-chatRoom</a> ·
+    MIT License
+  </p>
+  <p style="margin-top:0.5rem;color:var(--text-dim)">
+    © 2026 FenDou Chat · 开源，免费，持续进化
+  </p>
+</footer>
+
+<script>
+// ===== PARTICLES =====
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+
+function createParticle() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
+    r: Math.random() * 1.5 + 0.5,
+    alpha: Math.random() * 0.5 + 0.1,
+    color: Math.random() > 0.5 ? '99,102,241' : '6,182,212'
+  };
+}
+
+function initParticles() {
+  particles = [];
+  const count = Math.min(80, Math.floor(W * H / 15000));
+  for (let i = 0; i < count; i++) particles.push(createParticle());
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = W;
+    if (p.x > W) p.x = 0;
+    if (p.y < 0) p.y = H;
+    if (p.y > H) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${p.color},${p.alpha})`;
+    ctx.fill();
+  });
+
+  // Draw connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(99,102,241,${0.08 * (1 - dist / 120)})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+
+window.addEventListener('resize', () => { resize(); initParticles(); });
+resize();
+initParticles();
+drawParticles();
+
+// ===== SCROLL REVEAL =====
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ===== COUNTER =====
+function animateCounter(el, target, duration = 1500) {
+  let start = 0;
+  const step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.floor(start);
+    if (start >= target) clearInterval(timer);
+  }, 16);
+}
+
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const target = parseInt(e.target.dataset.target);
+      animateCounter(e.target, target);
+      counterObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+// ===== NAV SCROLL =====
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 50) {
+    nav.style.background = 'rgba(10,10,26,0.95)';
+    nav.style.boxShadow = '0 4px 30px rgba(0,0,0,0.3)';
+  } else {
+    nav.style.background = 'rgba(10,10,26,0.8)';
+    nav.style.boxShadow = 'none';
+  }
+});
+
+// ===== STAR CHART =====
+function drawStarChart() {
+  const canvas = document.getElementById('starChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width;
+  const H = rect.height;
+
+  const months = ['1月', '2月', '3月', '4月'];
+  const data = [0, 0, 0, 1];
+  const projectedData = [null, null, null, 1, 5, 12, 25];
+  const projMonths = ['1月', '2月', '3月', '4月', '5月', '6月', '7月'];
+
+  const padX = 40, padY = 20, padB = 35, padR = 20;
+  const chartW = W - padX - padR;
+  const chartH = H - padY - padB;
+  const maxVal = 30;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = padY + chartH - (i / 5) * chartH;
+    ctx.beginPath();
+    ctx.moveTo(padX, y);
+    ctx.lineTo(W - padR, y);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(148,163,184,0.5)';
+    ctx.font = '10px Inter';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal * i / 5), padX - 6, y + 4);
+  }
+
+  // Actual line
+  const stepX = chartW / (projMonths.length - 1);
+  const points = projectedData.map((v, i) => ({
+    x: padX + i * stepX,
+    y: v !== null ? padY + chartH - (v / maxVal) * chartH : null
+  }));
+
+  // Area fill for projected
+  const gradient = ctx.createLinearGradient(0, padY, 0, padY + chartH);
+  gradient.addColorStop(0, 'rgba(99,102,241,0.3)');
+  gradient.addColorStop(1, 'rgba(99,102,241,0)');
+
+  ctx.beginPath();
+  let started = false;
+  points.forEach((p, i) => {
+    if (p.y !== null) {
+      if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+      else ctx.lineTo(p.x, p.y);
+    }
+  });
+  ctx.lineTo(points[points.length - 1].x, padY + chartH);
+  ctx.lineTo(padX, padY + chartH);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // Actual line stroke
+  ctx.beginPath();
+  started = false;
+  points.slice(0, 4).forEach((p, i) => {
+    if (p.y !== null) {
+      if (!started) { ctx.moveTo(p.x, p.y); started = true; }
+      else ctx.lineTo(p.x, p.y);
+    }
+  });
+  ctx.strokeStyle = 'rgba(99,102,241,0.9)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Projected dashed line
+  ctx.beginPath();
+  ctx.setLineDash([6, 4]);
+  ctx.moveTo(points[3].x, points[3].y);
+  points.slice(4).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = 'rgba(6,182,212,0.7)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Dots
+  points.forEach((p, i) => {
+    if (p.y !== null) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = i < 4 ? 'rgb(99,102,241)' : 'rgb(6,182,212)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(10,10,26,0.8)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  });
+
+  // X Labels
+  ctx.fillStyle = 'rgba(148,163,184,0.7)';
+  ctx.font = '10px Inter';
+  ctx.textAlign = 'center';
+  projMonths.forEach((m, i) => {
+    ctx.fillText(m, padX + i * stepX, H - 8);
+  });
+
+  // Projected label
+  ctx.fillStyle = 'rgba(6,182,212,0.6)';
+  ctx.font = 'italic 10px Inter';
+  ctx.textAlign = 'left';
+  ctx.fillText('预测增长', points[4].x + 8, points[4].y - 8);
+}
+
+// Init chart after layout
+setTimeout(() => {
+  const chartEl = document.getElementById('starChart');
+  if (chartEl) {
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) { drawStarChart(); obs.disconnect(); }
+    }, { threshold: 0.3 });
+    obs.observe(chartEl);
+  }
+}, 100);
+
+// ===== COPY CODE =====
+function copyCode(btn) {
+  const block = btn.parentElement;
+  const text = block.innerText.replace('复制\n', '').replace('已复制\n', '');
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制 ✓';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = '复制'; btn.style.color = ''; }, 2000);
+  });
+}
+
+// ===== SMOOTH NAV =====
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href');
+    if (id === '#') return;
+    const el = document.querySelector(id);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ===== CHAT ANIMATION =====
+setTimeout(() => {
+  const body = document.querySelector('.mockup-body');
+  if (!body) return;
+  const aiReply = document.createElement('div');
+  aiReply.className = 'chat-msg';
+  aiReply.style.animationDelay = '0.1s';
+  aiReply.innerHTML = `
+    <div class="avatar avatar-ai">🤖</div>
+    <div class="bubble bubble-ai">当然！点击「+」按钮可以发送文件，💡 支持图片、文档、视频等格式，最大 50MB！</div>
+  `;
+  setTimeout(() => {
+    const typing = body.querySelector('.typing-indicator');
+    if (typing) body.removeChild(typing);
+    body.appendChild(aiReply);
+    body.scrollTop = body.scrollHeight;
+  }, 3000);
+}, 2000);
+</script>
+</body>
+</html>
