@@ -69,13 +69,21 @@
 
 ```
 ANnianAiClaw/
-├── AGENTS.md        # 核心规则（本文件）
-├── SOUL.md          # 工作风格与个性设定
-├── MEMORY.md        # 长期记忆总览
-├── README.md        # 项目简介
-├── memory/          # 分类记忆文件（偏好、背景、规则等）
-├── logs/            # 时序日志（按月或按事件）
-└── tasks/           # 任务管理（待办、进行中、已完成）
+├── AGENTS.md              # 核心规则（本文件）
+├── SOUL.md                # 工作风格与个性设定
+├── MEMORY.md              # 长期记忆总览
+├── README.md              # 项目简介
+├── .agents/
+│   └── skills/            # 项目级技能库（见 §7）
+│       ├── README.md      # 技能库规范说明
+│       ├── INDEX.md       # 技能注册索引
+│       └── <skill-name>/  # 每个技能一个独立目录
+│           ├── skill.yml  # 技能元数据（必须）
+│           ├── run.sh     # 入口脚本
+│           └── README.md  # 技能说明（推荐）
+├── memory/                # 分类记忆文件（偏好、背景、规则等）
+├── logs/                  # 时序日志（按月或按事件）
+└── tasks/                 # 任务管理（待办、进行中、已完成）
 ```
 
 ---
@@ -91,4 +99,89 @@ ANnianAiClaw/
 
 ---
 
-*最后更新：2026-04-29 | 版本：v1.0*
+## 7. 技能系统（Skill System）
+
+本仓库为 AI 助手配备了稳定的**技能发现 → 安装 → 使用**三段式机制，所有技能统一存放在 `.agents/skills/`。
+
+### 7.1 技能目录规范
+
+每个技能是 `.agents/skills/<skill-name>/` 下的独立目录，**必须包含** `skill.yml`：
+
+```yaml
+name: skill-name          # 与目录名一致，小写连字符
+version: "1.0.0"          # 语义版本
+description: "技能描述"
+author: ANnianExplorer
+entry: run.sh             # 入口文件（相对于技能目录）
+language: shell           # shell / python / node / go
+tags: []                  # 可选标签
+dependencies: []          # 可选依赖（见 §7.3）
+inputs: {}                # 可选：输入参数说明
+outputs: {}               # 可选：输出说明
+```
+
+### 7.2 技能发现（Discovery）
+
+AI 在每次会话开始或被要求使用技能时，**按以下顺序**自动发现可用技能：
+
+1. 查阅 `.agents/skills/INDEX.md`（快速索引，优先）
+2. 若索引不存在或需验证，扫描 `.agents/skills/` 所有子目录
+3. 检查每个子目录是否含 `skill.yml`，读取元数据
+4. 若发现新技能，更新 `INDEX.md`
+
+### 7.3 技能安装（Installation）
+
+调用技能前，AI 根据 `skill.yml` 中的 `dependencies` 安装依赖：
+
+```yaml
+dependencies:
+  - type: pip       # pip / npm / apt / shell
+    package: requests
+    version: ">=2.28"
+  - type: shell
+    command: "curl -fsSL https://example.com/install.sh | bash"
+```
+
+安装规则：
+- `pip` → `pip install <package><version>`
+- `npm` → `npm install -g <package>`
+- `apt` → `sudo apt-get install -y <package>`
+- `shell` → 直接执行 `command` 字段内容
+- 安装失败时终止执行并向用户报告错误
+
+### 7.4 技能使用（Usage）
+
+AI 调用技能的标准流程：
+
+1. 在 `INDEX.md` 中定位目标技能目录
+2. 读取 `skill.yml`，确认 `entry` 和 `language`
+3. 按 `language` 构造执行命令：
+   - `shell` → `bash <entry>`
+   - `python` → `python <entry>`
+   - `node` → `node <entry>`
+   - `go` → `go run <entry>`
+4. 通过环境变量 `SKILL_INPUT_<KEY>` 传入 `inputs` 参数
+5. 捕获 stdout/stderr，记录执行结果
+
+### 7.5 新增技能步骤
+
+1. 创建目录：`mkdir .agents/skills/<skill-name>`
+2. 复制模板：参考 `.agents/skills/hello-world/`
+3. 编辑 `skill.yml`（name 必须与目录名一致）
+4. 编写入口文件（如 `run.sh`）
+5. 在 `.agents/skills/INDEX.md` 追加一行注册记录
+6. 提交后 CI 的 `validate-skills` workflow 会自动校验格式
+
+### 7.6 CI 自动校验
+
+`.github/workflows/validate-skills.yml` 在以下情况自动运行：
+
+- 向 `main` 分支推送且涉及 `.agents/skills/**`
+- PR 中涉及 `.agents/skills/**`
+- 手动触发（`workflow_dispatch`）
+
+校验内容：`skill.yml` 必填字段、`name` 与目录名一致性、入口文件存在性。
+
+---
+
+*最后更新：2026-04-29 | 版本：v1.1*

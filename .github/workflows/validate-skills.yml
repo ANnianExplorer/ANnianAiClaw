@@ -1,0 +1,109 @@
+name: Validate Skills
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.agents/skills/**'
+  pull_request:
+    paths:
+      - '.agents/skills/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate skill definitions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yq (YAML parser)
+        run: |
+          wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod +x /usr/local/bin/yq
+
+      - name: Discover and validate skills
+        run: |
+          echo "=== ANnian AI Skill System — Validation ==="
+          SKILL_DIR=".agents/skills"
+          ERRORS=0
+          SKILL_COUNT=0
+
+          for skill_path in "$SKILL_DIR"/*/; do
+            skill_name=$(basename "$skill_path")
+            yml="$skill_path/skill.yml"
+
+            echo ""
+            echo "── 检查技能：$skill_name"
+
+            # 1. skill.yml 必须存在
+            if [ ! -f "$yml" ]; then
+              echo "  ❌ 缺少 skill.yml"
+              ERRORS=$((ERRORS + 1))
+              continue
+            fi
+
+            # 2. 必填字段检查
+            for field in name version description author entry language; do
+              value=$(yq ".$field" "$yml" 2>/dev/null)
+              if [ -z "$value" ] || [ "$value" = "null" ]; then
+                echo "  ❌ skill.yml 缺少必填字段：$field"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+
+            # 3. name 字段必须与目录名一致
+            name_in_yml=$(yq ".name" "$yml")
+            if [ "$name_in_yml" != "$skill_name" ]; then
+              echo "  ❌ skill.yml 中 name($name_in_yml) 与目录名($skill_name) 不一致"
+              ERRORS=$((ERRORS + 1))
+            fi
+
+            # 4. 入口文件必须存在
+            entry=$(yq ".entry" "$yml")
+            if [ "$entry" != "null" ] && [ ! -f "$skill_path/$entry" ]; then
+              echo "  ❌ 入口文件不存在：$entry"
+              ERRORS=$((ERRORS + 1))
+            fi
+
+            # 5. shell 入口文件必须有执行权限或可直接读取
+            lang=$(yq ".language" "$yml")
+            if [ "$lang" = "shell" ] && [ -f "$skill_path/$entry" ]; then
+              if ! head -1 "$skill_path/$entry" | grep -q "^#!"; then
+                echo "  ⚠️  shell 脚本建议添加 shebang（#!/usr/bin/env bash）"
+              fi
+            fi
+
+            echo "  ✅ 验证通过"
+            SKILL_COUNT=$((SKILL_COUNT + 1))
+          done
+
+          echo ""
+          echo "=== 验证完成 ==="
+          echo "技能总数：$SKILL_COUNT"
+          echo "错误数量：$ERRORS"
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "❌ 存在 $ERRORS 个错误，请修复后重新提交。"
+            exit 1
+          else
+            echo "✅ 所有技能验证通过！"
+          fi
+
+      - name: Print skill index summary
+        run: |
+          echo ""
+          echo "=== 已注册技能列表 ==="
+          SKILL_DIR=".agents/skills"
+          for skill_path in "$SKILL_DIR"/*/; do
+            skill_name=$(basename "$skill_path")
+            yml="$skill_path/skill.yml"
+            if [ -f "$yml" ]; then
+              desc=$(yq ".description" "$yml")
+              version=$(yq ".version" "$yml")
+              echo "  📦 $skill_name @ $version — $desc"
+            fi
+          done

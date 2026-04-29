@@ -23,11 +23,21 @@
 - [x] 仓库初始化完成（2026-04-29）
 - [x] AI 工作空间搭建完成
 - [x] ai-ui-chatRoom 导航官网创建完成（2026-04-29）
+- [x] 技能系统（Skill System）搭建完成（2026-04-29）
 
 ## 关联项目
 
 - **ai-ui-chatRoom**：开源 AI 智能聊天室，Vue 3 + Spring Boot，地址：https://github.com/ANnianExplorer/ai-ui-chatRoom
 - **导航官网**：`docs/index.html`，通过 GitHub Pages 发布，URL：https://ANnianExplorer.github.io/ANnianAiClaw/
+
+## 技能系统
+
+- 技能根目录：`.agents/skills/`
+- 技能索引：`.agents/skills/INDEX.md`
+- 技能规范：`.agents/skills/README.md`
+- 首个示例技能：`.agents/skills/hello-world/`
+- CI 校验 workflow：`.github/workflows/validate-skills.yml`
+- 详细规范见 `AGENTS.md §7`
 
 ## 关键决策记录
 
@@ -36,6 +46,7 @@
 | 2026-04-29 | 创建 AGENTS.md 作为核心规则文件  | 统一 AI 行为规范               |
 | 2026-04-29 | 使用 memory/logs/tasks/ 三层结构 | 区分长期/临时/日志三类信息     |
 | 2026-04-29 | 在 docs/ 创建导航官网            | GitHub Pages 发布，展示 ai-ui-chatRoom |
+| 2026-04-29 | 建立 .agents/skills/ 技能系统    | 为 AI 提供稳定的技能发现/安装/使用机制 |
 
 ---
 
